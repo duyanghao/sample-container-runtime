@@ -1,8 +1,8 @@
-// +build linux
 package runtime
 
 import (
 	"context"
+	"github.com/duyanghao/sample-container-runtime/pkg/runtime/nsisolation"
 	"github.com/duyanghao/sample-container-runtime/pkg/runtime/util"
 	log "github.com/sirupsen/logrus"
 	"os"
@@ -68,12 +68,20 @@ func init() {
 
 // nsInit prepares child process namespace isolation initialization work and exec container command
 func nsInit() {
-	command := os.Args[1]
+	// Set container hostname
 	hostname := util.RandomSeq(10)
 	if err := syscall.Sethostname([]byte(hostname)); err != nil {
 		log.Errorf("setting hostname failure: %v", err)
 		os.Exit(1)
 	}
+	// Set container new rootfs
+	newRoot := os.Args[1]
+	if err := nsisolation.PivotRoot(newRoot); err != nil {
+		log.Errorf("pivoting container rootfs failure: %v", err)
+		os.Exit(1)
+	}
+	// Execute container command
+	command := os.Args[2]
 	containerRun(command)
 }
 
@@ -93,9 +101,9 @@ func containerRun(command string) {
 
 // createChildProcess creates a child process and waits it out
 func (cr *ContainerRuntime) createChildProcess(ctx context.Context) error {
-	cmd := reexec.Command("nsInit", cr.Command, cr.RootfsDir)
+	cmd := reexec.Command("nsInit", cr.RootfsDir, cr.Command)
 	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Cloneflags: syscall.CLONE_NEWUTS,
+		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWNS,
 	}
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout

@@ -1,6 +1,7 @@
 package nsisolation
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"syscall"
@@ -15,7 +16,7 @@ func PivotRoot(newRoot string) error {
 	oldRoot := "/.pivot_oldroot"
 	putOldRoot := filepath.Join(newRoot, oldRoot)
 	if err := syscall.Mount(newRoot, newRoot, "", syscall.MS_BIND|syscall.MS_REC, ""); err != nil {
-		return err
+		return fmt.Errorf("syscall Mount failure: %v", err)
 	}
 
 	// Create putOldRoot directory where the old root will be stored
@@ -25,7 +26,7 @@ func PivotRoot(newRoot string) error {
 
 	// Pivots root
 	if err := syscall.PivotRoot(newRoot, putOldRoot); err != nil {
-		return err
+		return fmt.Errorf("syscall PivotRoot failure: %v", err)
 	}
 
 	// Ensure current working directory is set to new root
@@ -35,7 +36,7 @@ func PivotRoot(newRoot string) error {
 
 	// Umount old root, which now lives at /.pivot_oldroot
 	if err := syscall.Unmount(oldRoot, syscall.MNT_DETACH); err != nil {
-		return err
+		return fmt.Errorf("syscall Unmount failure: %v", err)
 	}
 
 	// Remove old root

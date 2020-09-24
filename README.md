@@ -51,6 +51,43 @@ $ hostname
 vm-xxx
 ```
 
+## MNT namespace isolation
+
+Isolating container in the MNT namespace is a little bit more complex. First of all, we need to provide a new filesystem for the container. I recommend to use busybox root filesystem:
+
+```bash
+$ mkdir busybox
+$ tar -xf busybox.tar -C assets/busybox
+```
+
+We will use busybox as a mount directory for the container.
+
+In a child process the PivotRoot() function is called. This function is responsible for mounting <rootfs-dir> as a root filesystem for the container. In particular, it does following operations:
+
+1. remounts current root filesystem with MS_PRIVATE
+2. binds mount new root to itself
+3. creates temporary directory, where the old root will be stored
+4. pivots root (swaps the mount at `/` with another (the `<rootfs-dir>` in this case).
+5. ensures current working directory is set to new root(os.Chdir("/"))
+6. umounts and removes the old root
+
+The implementation can be tested using `mount` command. From within the container it should show no mounts.
+
+```bash
+$ ./build/pkg/cmd/sample-container-runtime/sample-container-runtime /bin/sh assets/busybox
+/ # env
+SHLVL=1
+PWD=/
+/ # mount
+mount: no /proc/mounts
+/ # ls
+bin    dev    etc    home   lib    lib64  root   tmp    usr    var
+/ # hostname
+bdUcLVkPYF
+/ # exit
+INFO[0011] container exit normally
+```
+
 ## Refs
 
 * [Code to accompany the "Namespaces in Go" series of articles](https://github.com/teddyking/ns-process)
@@ -63,3 +100,4 @@ vm-xxx
 * [Introducing Linux Network Namespaces](https://blog.scottlowe.org/2013/09/04/introducing-linux-network-namespaces/)
 * [Run a command in unique namespaces](https://github.com/iffyio/isolate)
 * [Mount namespaces and shared subtrees - LWN article](https://lwn.net/Articles/689856/)
+* [Golang+shell](https://zhuanlan.zhihu.com/p/95590072)

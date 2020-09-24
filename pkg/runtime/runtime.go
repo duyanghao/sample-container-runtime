@@ -1,13 +1,25 @@
+// +build linux
 package runtime
 
 import (
 	"context"
+	"github.com/duyanghao/sample-container-runtime/pkg/runtime/util"
 	log "github.com/sirupsen/logrus"
+	"os"
+	"os/exec"
+	"syscall"
+
+	"github.com/docker/docker/pkg/reexec"
 )
 
 // ContainerRuntime generates a sample container
 type ContainerRuntime struct {
-	crOpts containerRuntimeOptions
+	// Container hostname
+	Hostname string
+	// Container startup command
+	Command string
+	// Container rootfs directory
+	RootfsDir string
 }
 
 type containerRuntimeOptions struct {
@@ -40,10 +52,61 @@ func New(opts ...Option) (*ContainerRuntime, error) {
 	for _, opt := range opts {
 		opt(&options)
 	}
-	return &ContainerRuntime{crOpts: options}, nil
+	return &ContainerRuntime{
+		Hostname:  util.RandomSeq(10),
+		Command:   options.command,
+		RootfsDir: options.rootfsDir,
+	}, nil
+}
+
+// nsInit prepares child process namespace isolation initialization work and exec container command
+func nsInit() {
+	command := os.Args[1]
+	hostname := util.RandomSeq(10)
+	if err := syscall.Sethostname(hostname); err != nil {
+		log.Errorf("setting hostname failure: %v", err)
+		os.Exit(1)
+	}
+	containerRun(command)
+}
+
+// containerRun executes command normally
+func containerRun(command string) {
+	cmd := exec.Command(command)
+
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Run(); err != nil {
+		log.Errorf("running container command: %s failure: %v", command, err)
+		os.Exit(1)
+	}
+}
+
+// createChildProcess creates a child process and waits it out
+func (cr *ContainerRuntime) createChildProcess(ctx context.Context) error {
+	cmd := reexec.Command("nsInit", cr.Command, cr.RootfsDir)
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Cloneflags: syscall.CLONE_NEWUTS,
+	}
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Start(); err != nil {
+		log.Errorf("starting the reexec.Command failure: %v", err)
+		return err
+	}
+	if err := cmd.Wait(); err != nil {
+		log.Errorf("waiting for the reexec.Command failure: %v", err)
+		return err
+	}
+	return nil
 }
 
 // Run begins creating a sample container
 func (cr *ContainerRuntime) Run(ctx context.Context) {
-	log.Println(cr.crOpts)
+	if err := cr.createChildProcess(ctx); err != nil {
+		log.Errorf("createChildProcess failed: %v", err)
+	}
 }

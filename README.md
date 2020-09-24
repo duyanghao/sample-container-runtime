@@ -7,6 +7,7 @@ This is a simple container-runtime implemented for learning purposes.
 
 ## Refs
 
+* [Code to accompany the "Namespaces in Go" series of articles](https://github.com/teddyking/ns-process)
 * [Linux containers in 500 lines of code](https://blog.lizzie.io/linux-containers-in-500-loc.html)
 * [Whitepaper - Understanding and hardening Linux Containers](https://github.com/osinstom/containers-impl-c)
 * [Build Your Own Container Using Less than 100 Lines of Go](https://www.infoq.com/articles/build-a-container-golang/)

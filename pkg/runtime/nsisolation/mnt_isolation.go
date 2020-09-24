@@ -10,13 +10,17 @@ import (
 // PivotRoot creates MNT namespace for container. It unmounts global filesystem, mounts local plus external
 // mount given by user and prepares the container filesystem.
 func PivotRoot(newRoot string) error {
+	// Remounts current root filesystem with MS_PRIVATE
+	if err := syscall.Mount("", "/", "", syscall.MS_REC|syscall.MS_PRIVATE, ""); err != nil {
+		return fmt.Errorf("syscall Mount current root failure: %v", err)
+	}
 	// Bind mount newRoot to itself - this is a slight hack needed to satisfy the
 	// pivot_root requirement that newRoot and putold must not be on the same
 	// filesystem as the current root
 	oldRoot := "/.pivot_oldroot"
 	putOldRoot := filepath.Join(newRoot, oldRoot)
-	if err := syscall.Mount(newRoot, newRoot, "", syscall.MS_BIND|syscall.MS_REC, ""); err != nil {
-		return fmt.Errorf("syscall Mount failure: %v", err)
+	if err := syscall.Mount(newRoot, newRoot, "", syscall.MS_BIND|syscall.MS_PRIVATE, ""); err != nil {
+		return fmt.Errorf("syscall Mount new root failure: %v", err)
 	}
 
 	// Create putOldRoot directory where the old root will be stored

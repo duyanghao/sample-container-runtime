@@ -92,6 +92,7 @@ func containerRun(command string) {
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+	cmd.Env = []string{}
 
 	if err := cmd.Run(); err != nil {
 		log.Errorf("running container command: %s failure: %v", command, err)

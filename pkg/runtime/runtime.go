@@ -108,6 +108,7 @@ func (cr *ContainerRuntime) createChildProcess(ctx context.Context) error {
 		log.Errorf("waiting for the reexec.Command failure: %v", err)
 		return err
 	}
+	log.Info("container exit normally")
 	return nil
 }
 

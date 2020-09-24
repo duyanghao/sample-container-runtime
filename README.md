@@ -32,6 +32,25 @@ There are following namespaces in Linux:
 Technically, a container is just a separate process, which is isolated from the host OS by using the concept of Linux namespaces.
 Moreover, resources and privileges of this process are limited. All together creates the abstraction of a container.
 
+## UTS namespace isolation
+
+In case of UTS namespace it's all about passing a CLONE_NEWUTS to clone() function and invoking syscall.Sethostname() from within a child process.
+
+The result can be tested by using hostname command from the container and outside the container:
+
+```bash
+# inside of container
+$ ./build/pkg/cmd/sample-container-runtime/sample-container-runtime /bin/bash rootdir
+[root@uvNfXXCGtm sample-container-runtime]# hostname
+uvNfXXCGtm
+[root@uvNfXXCGtm sample-container-runtime]# exit
+exit
+INFO[0002] container exit normally
+# outside of container
+$ hostname
+vm-xxx
+```
+
 ## Refs
 
 * [Code to accompany the "Namespaces in Go" series of articles](https://github.com/teddyking/ns-process)

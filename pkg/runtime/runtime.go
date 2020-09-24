@@ -59,11 +59,18 @@ func New(opts ...Option) (*ContainerRuntime, error) {
 	}, nil
 }
 
+func init() {
+	reexec.Register("nsInit", nsInit)
+	if reexec.Init() {
+		os.Exit(0)
+	}
+}
+
 // nsInit prepares child process namespace isolation initialization work and exec container command
 func nsInit() {
 	command := os.Args[1]
 	hostname := util.RandomSeq(10)
-	if err := syscall.Sethostname(hostname); err != nil {
+	if err := syscall.Sethostname([]byte(hostname)); err != nil {
 		log.Errorf("setting hostname failure: %v", err)
 		os.Exit(1)
 	}

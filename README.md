@@ -40,7 +40,7 @@ The result can be tested by using hostname command from the container and outsid
 
 ```bash
 # inside of container
-$ ./build/pkg/cmd/sample-container-runtime/sample-container-runtime /bin/bash rootdir
+$ ./build/pkg/cmd/sample-container-runtime/sample-container-runtime /bin/bash assets/busybox
 uvNfXXCGtm # hostname
 uvNfXXCGtm
 uvNfXXCGtm # exit

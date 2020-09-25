@@ -74,8 +74,13 @@ func nsInit() {
 		log.Errorf("setting hostname failure: %v", err)
 		os.Exit(1)
 	}
-	// Set container new rootfs
+	// Prepare container proc mount
 	newRoot := os.Args[1]
+	if err := nsisolation.ProcPrepare(newRoot); err != nil {
+		log.Errorf("preparing container /proc file system failure: %v", err)
+		os.Exit(1)
+	}
+	// Prepare container new root filesystem
 	if err := nsisolation.PivotRoot(newRoot); err != nil {
 		log.Errorf("pivoting container rootfs failure: %v", err)
 		os.Exit(1)
@@ -104,7 +109,7 @@ func containerRun(command string) {
 func (cr *ContainerRuntime) createChildProcess(ctx context.Context) error {
 	cmd := reexec.Command("nsInit", cr.RootfsDir, cr.Command)
 	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWNS,
+		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWNS | syscall.CLONE_NEWPID,
 	}
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout

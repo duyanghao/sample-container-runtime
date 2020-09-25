@@ -68,6 +68,7 @@ In a child process the PivotRoot() function is called. This function is responsi
 2. binds mount new root to itself
 3. creates temporary directory, where the old root will be stored
 4. [pivots root (swaps the mount at `/` with another (the `<rootfs-dir>` in this case).](https://lwn.net/Articles/689856/)
+
    pivot_root() changes the root directory and the current working
    directory of each process or thread in the same mount namespace to
    new_root if they point to the old root directory.  (See also NOTES.)

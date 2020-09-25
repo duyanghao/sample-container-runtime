@@ -2,7 +2,6 @@ package runtime
 
 import (
 	"context"
-	"fmt"
 	"github.com/duyanghao/sample-container-runtime/pkg/runtime/nsisolation"
 	"github.com/duyanghao/sample-container-runtime/pkg/runtime/util"
 	log "github.com/sirupsen/logrus"

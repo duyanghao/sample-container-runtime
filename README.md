@@ -118,6 +118,51 @@ bdUcLVkPYF
 INFO[0011] container exit normally
 ```
 
+## PID namespace isolation
+
+If we would run `sample-container-runtime` and invoke `ps aux` command we would see:
+
+```bash
+/ # ps aux
+PID   USER     TIME  COMMAND
+# empty!!!
+```
+
+This is because we have mounted a new file system with an empty `/proc` directory. Linux uses `/proc` directory to store
+information about all processes running in the system. As the `/proc` is empty, we cannot see any process.
+
+To fix that, we need to prepare `/proc` filesystem before running the process inside the container.
+
+Firstly, I will create a new (PID) namespace by passing additional flag (`CLONE_NEWPID`) to the `clone()` function.
+
+Then, the `/proc` file system needs to be prepared for a child process. This is done in `ProcPrepare()` function. This function
+creates a new `/proc` directory in the container's file system which has just been mounted. Additionally, it mounts the `proc` mount
+of a parent process to the `/proc` of the container. The `proc` mount exists on the list returned by `mount` command invoked from a host system:
+
+```bash
+$ mount|grep proc
+proc on /proc type proc (rw,relatime)
+...
+```
+
+As the container is running inside a PID namespace, it will have an access only to processes belonging to it. Now, the output of `ps aux` from
+within a container looks as follows:
+
+```bash
+$ ./build/pkg/cmd/sample-container-runtime/sample-container-runtime /bin/sh assets/busybox
+/ # mount
+rootfs on / type rootfs (rw)
+/dev/vda1 on / type ext4 (rw,noatime,data=ordered)
+proc on /proc type proc (rw,relatime)
+/ # ps -ef
+PID   USER     TIME   COMMAND
+    1 root       0:00 {exe} nsInit assets/busybox /bin/sh
+    7 root       0:00 /bin/sh
+    9 root       0:00 ps -ef
+/ # exit
+INFO[0013] container exit normally
+```
+
 ## Refs
 
 * [Code to accompany the "Namespaces in Go" series of articles](https://github.com/teddyking/ns-process)

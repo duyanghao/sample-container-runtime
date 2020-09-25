@@ -215,6 +215,37 @@ $ readlink /proc/$$/ns/ipc
 ipc:[4026531839]
 ```
 
+## [User namespace](https://medium.com/@teddyking/namespaces-in-go-user-a54ef9476f2a)
+
+USER namespaces are a little bit more complex than the previous namespaces I've implemented.
+Hence, I encourage every reader to familiarize themselves with following two articles about USER namespaces:
+
+https://lwn.net/Articles/532593/
+
+https://lwn.net/Articles/540087/
+
+In general, USER namespace allows to map a process's user and group IDs within the namespace with its IDS outside the namespace.
+Thus, a process can be privileged to make some operations inside the namespace, but it would not be allowed to perform the same operations
+outside the namespace.
+
+To isolate a container (process) in a USER namespace properly there need to be a mapping from the user IDs (and group IDs also)
+inside a USER namespace to a corresponding set of user IDs outside the namespace. Otherwise, the system calls returning user and group IDs
+(wrapped by `getuid()` and `getgid()`) return the value defined in the file `/proc/sys/kernel/overflowuid` for user ID and
+`/proc/sys/kernel/overflowgid` for group ID (normally these values equal to 65534).
+
+To make things working a `uid` and `gid` mapping has to be configured.
+
+Every process stores a `uid` and `gid` mapping information in the file `/proc/PID/uid_map` and `/proc/PID/gid_map`, respectively.
+
+These files must be properly configured to provide a mapping. As these files are owned by the user ID that created the namespace, it is
+the only user (except for root), who is allowed to write to these files.
+
+![](docs/images/user_namespace.png)
+
+```bash
+
+```
+
 ## Refs
 
 * [Code to accompany the "Namespaces in Go" series of articles](https://github.com/teddyking/ns-process)

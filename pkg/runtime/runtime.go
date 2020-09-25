@@ -111,7 +111,25 @@ func containerRun(command, hostname string) {
 func (cr *ContainerRuntime) createChildProcess(ctx context.Context) error {
 	cmd := reexec.Command("nsInit", cr.RootfsDir, cr.Command)
 	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWNS | syscall.CLONE_NEWPID | syscall.CLONE_NEWIPC,
+		Cloneflags: syscall.CLONE_NEWUTS |
+			syscall.CLONE_NEWNS |
+			syscall.CLONE_NEWPID |
+			syscall.CLONE_NEWIPC |
+			syscall.CLONE_NEWUSER,
+		UidMappings: []syscall.SysProcIDMap{
+			{
+				ContainerID: 0,
+				HostID:      os.Getuid(),
+				Size:        1,
+			},
+		},
+		GidMappings: []syscall.SysProcIDMap{
+			{
+				ContainerID: 0,
+				HostID:      os.Getgid(),
+				Size:        1,
+			},
+		},
 	}
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout

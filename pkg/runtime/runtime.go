@@ -75,6 +75,11 @@ func nsInit() {
 		log.Errorf("setting hostname failure: %v", err)
 		os.Exit(1)
 	}
+	// Prepare container user
+	if err := nsisolation.PrepareUser(); err != nil {
+		log.Errorf("preparing container user failure: %v", err)
+		os.Exit(1)
+	}
 	// Prepare container new root filesystem
 	newRoot := os.Args[1]
 	if err := nsisolation.PivotRoot(newRoot); err != nil {

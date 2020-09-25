@@ -58,7 +58,7 @@ Isolating container in the MNT namespace is a little bit more complex. First of 
 
 ```bash
 $ mkdir assets/busybox
-$ tar -xf busybox.tar -C assets/busybox
+$ tar -xf assets/busybox.tar -C assets/busybox
 ```
 
 We will use busybox as a mount directory for the container.

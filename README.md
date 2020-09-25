@@ -242,10 +242,6 @@ the only user (except for root), who is allowed to write to these files.
 
 ![](docs/images/user_namespace.png)
 
-```bash
-
-```
-
 ## Refs
 
 * [Code to accompany the "Namespaces in Go" series of articles](https://github.com/teddyking/ns-process)

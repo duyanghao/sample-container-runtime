@@ -41,9 +41,9 @@ The result can be tested by using hostname command from the container and outsid
 ```bash
 # inside of container
 $ ./build/pkg/cmd/sample-container-runtime/sample-container-runtime /bin/bash rootdir
-[root@uvNfXXCGtm sample-container-runtime]# hostname
+uvNfXXCGtm # hostname
 uvNfXXCGtm
-[root@uvNfXXCGtm sample-container-runtime]# exit
+uvNfXXCGtm # exit
 exit
 INFO[0002] container exit normally
 
@@ -106,16 +106,16 @@ The implementation can be tested using `mount` command. From within the containe
 
 ```bash
 $ ./build/pkg/cmd/sample-container-runtime/sample-container-runtime /bin/sh assets/busybox
-/ # env
+bdUcLVkPYF # env
 SHLVL=1
 PWD=/
-/ # mount
+bdUcLVkPYF # mount
 mount: no /proc/mounts
-/ # ls
+bdUcLVkPYF # ls
 bin    dev    etc    home   lib    lib64  root   tmp    usr    var
-/ # hostname
+bdUcLVkPYF # hostname
 bdUcLVkPYF
-/ # exit
+bdUcLVkPYF # exit
 INFO[0011] container exit normally
 ```
 
@@ -124,7 +124,7 @@ INFO[0011] container exit normally
 If we would run `sample-container-runtime` and invoke `ps aux` command we would see:
 
 ```bash
-/ # ps aux
+ODoTeVpuuc # ps aux
 PID   USER     TIME  COMMAND
 # empty!!!
 ```
@@ -151,16 +151,16 @@ within a container looks as follows:
 
 ```bash
 $ ./build/pkg/cmd/sample-container-runtime/sample-container-runtime /bin/sh assets/busybox
-/ # mount
+ODoTeVpuuc # mount
 rootfs on / type rootfs (rw)
 /dev/vda1 on / type ext4 (rw,noatime,data=ordered)
 proc on /proc type proc (rw,relatime)
-/ # ps -ef
+ODoTeVpuuc # ps -ef
 PID   USER     TIME   COMMAND
     1 root       0:00 {exe} nsInit assets/busybox /bin/sh
     7 root       0:00 /bin/sh
     9 root       0:00 ps -ef
-/ # exit
+ODoTeVpuuc # exit
 INFO[0013] container exit normally
 ```
 
@@ -173,7 +173,7 @@ To verify whether container has been isolated in the IPC namespace run following
 ```bash
 # inside of container
 $ ./build/pkg/cmd/sample-container-runtime/sample-container-runtime /bin/sh assets/busybox
-/ # ipcs -q
+gyZQRmcHMr # ipcs -q
 
 ------ Message Queues --------
 key        msqid      owner      perms      used-bytes   messages
@@ -185,8 +185,8 @@ $ ipcs -q
 
 ------ Message Queues --------
 key        msqid      owner      perms      used-bytes   messages    
-0x11df483b 0          root       644        0            0           
-0x98665985 32769      root       644        0            0
+0x11df483b 0          xxx        644        0            0           
+0x98665985 32769      xxx        644        0            0
 ```
 
 ## Refs

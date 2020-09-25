@@ -97,6 +97,7 @@ func containerRun(command string) {
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+	// Reset container process environments
 	cmd.Env = []string{}
 
 	if err := cmd.Run(); err != nil {
@@ -109,7 +110,7 @@ func containerRun(command string) {
 func (cr *ContainerRuntime) createChildProcess(ctx context.Context) error {
 	cmd := reexec.Command("nsInit", cr.RootfsDir, cr.Command)
 	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWNS | syscall.CLONE_NEWPID,
+		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWNS | syscall.CLONE_NEWPID | syscall.CLONE_NEWIPC,
 	}
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout

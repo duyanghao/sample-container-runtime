@@ -56,7 +56,7 @@ vm-xxx
 Isolating container in the MNT namespace is a little bit more complex. First of all, we need to provide a new filesystem for the container. I recommend to use busybox root filesystem:
 
 ```bash
-$ mkdir busybox
+$ mkdir assets/busybox
 $ tar -xf busybox.tar -C assets/busybox
 ```
 
@@ -67,7 +67,36 @@ In a child process the PivotRoot() function is called. This function is responsi
 1. remounts current root filesystem with MS_PRIVATE
 2. binds mount new root to itself
 3. creates temporary directory, where the old root will be stored
-4. pivots root (swaps the mount at `/` with another (the `<rootfs-dir>` in this case).
+4. [pivots root (swaps the mount at `/` with another (the `<rootfs-dir>` in this case).](https://lwn.net/Articles/689856/)
+   pivot_root() changes the root directory and the current working
+   directory of each process or thread in the same mount namespace to
+   new_root if they point to the old root directory.  (See also NOTES.)
+   On the other hand, pivot_root() does not change the caller's current
+   working directory (unless it is on the old root directory), and thus
+   it should be followed by a chdir("/") call.
+   
+   The following restrictions apply:
+   -  new_root and put_old must be directories.
+    
+   -  new_root and put_old must not be on the same mount as the current
+      root.
+
+   -  put_old must be at or underneath new_root; that is, adding some
+      nonnegative number of "/.." prefixes to the pathname pointed to by
+      put_old must yield the same directory as new_root.
+
+   -  new_root must be a path to a mount point, but can't be "/".  A
+      path that is not already a mount point can be converted into one
+      by bind mounting the path onto itself.
+
+   -  The propagation type of the parent mount of new_root and the
+      parent mount of the current root directory must not be MS_SHARED;
+      similarly, if put_old is an existing mount point, its propagation
+      type must not be MS_SHARED.  These restrictions ensure that
+      pivot_root() never propagates any changes to another mount
+      namespace.
+
+   -  The current root directory must be a mount point.       
 5. ensures current working directory is set to new root(os.Chdir("/"))
 6. umounts and removes the old root
 

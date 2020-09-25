@@ -108,6 +108,7 @@ The implementation can be tested using `mount` command. From within the containe
 $ ./build/pkg/cmd/sample-container-runtime/sample-container-runtime /bin/sh assets/busybox
 bdUcLVkPYF # env
 SHLVL=1
+PS1=bdUcLVkPYF #
 PWD=/
 bdUcLVkPYF # mount
 mount: no /proc/mounts
@@ -185,8 +186,8 @@ $ ipcs -q
 
 ------ Message Queues --------
 key        msqid      owner      perms      used-bytes   messages    
-0x11df483b 0          xxx        644        0            0           
-0x98665985 32769      xxx        644        0            0
+0x11df483b 0          root       644        0            0           
+0x98665985 32769      root       644        0            0
 ```
 
 ## Refs

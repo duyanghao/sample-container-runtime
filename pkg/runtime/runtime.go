@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"context"
+	"fmt"
 	"github.com/duyanghao/sample-container-runtime/pkg/runtime/nsisolation"
 	"github.com/duyanghao/sample-container-runtime/pkg/runtime/util"
 	log "github.com/sirupsen/logrus"
@@ -78,6 +79,11 @@ func nsInit() {
 	newRoot := os.Args[1]
 	if err := nsisolation.PivotRoot(newRoot); err != nil {
 		log.Errorf("pivoting container rootfs failure: %v", err)
+		os.Exit(1)
+	}
+	// Prepare container proc mount
+	if err := nsisolation.ProcPrepare(); err != nil {
+		log.Errorf("preparing container proc filesystem failure: %v", err)
 		os.Exit(1)
 	}
 	// Execute container command

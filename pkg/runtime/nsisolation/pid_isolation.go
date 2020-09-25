@@ -2,7 +2,6 @@ package nsisolation
 
 import (
 	"os"
-	"path/filepath"
 	"syscall"
 )
 
@@ -10,9 +9,9 @@ import (
 // Additionally, it mounts the proc mount of a parent process to the /proc of the container.
 // The proc mount exists on the list returned by mount command invoked from a host system:
 // proc on /proc type proc (rw,nosuid,nodev,noexec,relatime)
-func ProcPrepare(newRoot string) error {
+func ProcPrepare() error {
 	source := "proc"
-	target := filepath.Join(newRoot, "/proc")
+	target := "/proc"
 	fsType := "proc"
 	mntFlags := 0
 	data := ""

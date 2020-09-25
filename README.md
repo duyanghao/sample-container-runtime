@@ -22,7 +22,7 @@ There are following namespaces in Linux:
   * **UTS namespace** is about isolating hostnames. This namespace allows to set a different hostname for a container.
   * **MNT namespace** allows to mount a separate file system for a container.
   * **PID namespace** gives a container an isolated view on currently running Linux processes. As a result, a container will see only its own processes (processes of host OS will not be visible).
-  * **IPC namespace** isolates an inter-process communication. It prevents processes in different namespaces from establishing a shared memory to communicate with each other.
+  * **IPC namespace** isolates an inter-process communication. It prevents processes in different namespaces from establishing [System V IPC objects](https://man7.org/linux/man-pages/man7/sysvipc.7.html)(Shared Memory, Semaphore and Message Queues) and (since Linux 2.6.30) [POSIX message queues](https://man7.org/linux/man-pages/man7/mq_overview.7.html) to communicate with each other.
   * **USER namespace** allows to create a separate, (usually) privileged user (technically it's a logical mapping of a user created in host OS, I will explain it later) within the namespace. Users configured in a host OS are not visible from a container.
   * **NET namespace** creates a logical instance of a Linux network stack. A container has its own list of network interfaces, routing table and iptables rules.
 * `cgroups` and `setrlimit` - these both mechanisms are used to limit usage of resources (e.g. memory, disk I/O, CPU time) for a container.
@@ -167,6 +167,11 @@ INFO[0013] container exit normally
 
 ## IPC namespace
 
+>> Each IPC namespace has its own set of System V IPC identifiers and
+   its own POSIX message queue filesystem.  Objects created in an IPC
+   namespace are visible to all other processes that are members of that
+   namespace, but are not visible to processes in other IPC namespaces.
+
 Adding the IPC namespace is as simple as appending the new flag (CLONE_NEWIPC) to the `Cloneflags`.
 
 To verify whether container has been isolated in the IPC namespace run following commands:
@@ -174,20 +179,40 @@ To verify whether container has been isolated in the IPC namespace run following
 ```bash
 # inside of container
 $ ./build/pkg/cmd/sample-container-runtime/sample-container-runtime /bin/sh assets/busybox
-gyZQRmcHMr # ipcs -q
+gyZQRmcHMr # ipcs -a
+
+------ Shared Memory Segments --------
+key        shmid      owner      perms      bytes      nattch     status      
+
+------ Semaphore Arrays --------
+key        semid      owner      perms      nsems     
 
 ------ Message Queues --------
 key        msqid      owner      perms      used-bytes   messages
+gyZQRmcHMr # readlink /proc/$$/ns/ipc
+ipc:[4026532515]
 
 # outside of container
-$ ipcmk -Q
-Message queue id: 32769
-$ ipcs -q
+$ ipcs -a
 
 ------ Message Queues --------
 key        msqid      owner      perms      used-bytes   messages    
 0x11df483b 0          root       644        0            0           
-0x98665985 32769      root       644        0            0
+0x98665985 32769      root       644        0            0           
+
+------ Shared Memory Segments --------
+key        shmid      owner      perms      bytes      nattch     status      
+0x00005feb 0          root       666        12000      3                       
+0x00005fe7 32769      root       666        524288     2                       
+...                     
+
+------ Semaphore Arrays --------
+key        semid      owner      perms      nsems     
+0x00008708 0          root       666        1         
+0x000086f8 229377     root       666        1         
+...
+$ readlink /proc/$$/ns/ipc
+ipc:[4026531839]
 ```
 
 ## Refs
@@ -203,3 +228,4 @@ key        msqid      owner      perms      used-bytes   messages
 * [Run a command in unique namespaces](https://github.com/iffyio/isolate)
 * [Mount namespaces and shared subtrees - LWN article](https://lwn.net/Articles/689856/)
 * [Golang+shell](https://zhuanlan.zhihu.com/p/95590072)
+* [Linux Namespace : IPC](https://www.cnblogs.com/sparkdev/p/9400673.html)

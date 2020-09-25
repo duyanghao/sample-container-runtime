@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"context"
+	"fmt"
 	"github.com/duyanghao/sample-container-runtime/pkg/runtime/nsisolation"
 	"github.com/duyanghao/sample-container-runtime/pkg/runtime/util"
 	log "github.com/sirupsen/logrus"
@@ -87,18 +88,18 @@ func nsInit() {
 	}
 	// Execute container command
 	command := os.Args[2]
-	containerRun(command)
+	containerRun(command, hostname)
 }
 
 // containerRun executes command normally
-func containerRun(command string) {
+func containerRun(command, hostname string) {
 	cmd := exec.Command(command)
 
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	// Reset container process environments
-	cmd.Env = []string{}
+	cmd.Env = []string{fmt.Sprintf("PS1=%s # ", hostname)}
 
 	if err := cmd.Run(); err != nil {
 		log.Errorf("running container command: %s failure: %v", command, err)

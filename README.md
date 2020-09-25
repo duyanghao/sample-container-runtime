@@ -34,7 +34,7 @@ Moreover, resources and privileges of this process are limited. All together cre
 
 ## UTS namespace isolation
 
-In case of UTS namespace it's all about passing a CLONE_NEWUTS to clone() function and invoking syscall.Sethostname() from within a child process.
+In case of UTS namespace it's all about passing a CLONE_NEWUTS to `Cloneflags` and invoking syscall.Sethostname() from within a child process.
 
 The result can be tested by using hostname command from the container and outside the container:
 
@@ -46,6 +46,7 @@ uvNfXXCGtm
 [root@uvNfXXCGtm sample-container-runtime]# exit
 exit
 INFO[0002] container exit normally
+
 # outside of container
 $ hostname
 vm-xxx
@@ -133,7 +134,7 @@ information about all processes running in the system. As the `/proc` is empty, 
 
 To fix that, we need to prepare `/proc` filesystem before running the process inside the container.
 
-Firstly, I will create a new (PID) namespace by passing additional flag (`CLONE_NEWPID`) to the `clone()` function.
+Firstly, I will create a new (PID) namespace by passing additional flag (`CLONE_NEWPID`) to the `Cloneflags`.
 
 Then, the `/proc` file system needs to be prepared for a child process. This is done in `ProcPrepare()` function. This function
 creates a new `/proc` directory in the container's file system which has just been mounted. Additionally, it mounts the `proc` mount
@@ -161,6 +162,31 @@ PID   USER     TIME   COMMAND
     9 root       0:00 ps -ef
 / # exit
 INFO[0013] container exit normally
+```
+
+## IPC namespace
+
+Adding the IPC namespace is as simple as appending the new flag (CLONE_NEWIPC) to the `Cloneflags`.
+
+To verify whether container has been isolated in the IPC namespace run following commands:
+
+```bash
+# inside of container
+$ ./build/pkg/cmd/sample-container-runtime/sample-container-runtime /bin/sh assets/busybox
+/ # ipcs -q
+
+------ Message Queues --------
+key        msqid      owner      perms      used-bytes   messages
+
+# outside of container
+$ ipcmk -Q
+Message queue id: 32769
+$ ipcs -q
+
+------ Message Queues --------
+key        msqid      owner      perms      used-bytes   messages    
+0x11df483b 0          root       644        0            0           
+0x98665985 32769      root       644        0            0
 ```
 
 ## Refs

@@ -33,6 +33,11 @@ func PivotRoot(newRoot string) error {
 		return fmt.Errorf("syscall PivotRoot failure: %v", err)
 	}
 
+	// Prepare container proc mount
+	if err := ProcPrepare(newRoot); err != nil {
+		return fmt.Errorf("ProcPrepare failure: %v", err)
+	}
+
 	// Ensure current working directory is set to new root
 	if err := os.Chdir("/"); err != nil {
 		return err

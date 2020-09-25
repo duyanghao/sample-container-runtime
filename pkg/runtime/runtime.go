@@ -74,13 +74,8 @@ func nsInit() {
 		log.Errorf("setting hostname failure: %v", err)
 		os.Exit(1)
 	}
-	// Prepare container proc mount
-	newRoot := os.Args[1]
-	if err := nsisolation.ProcPrepare(newRoot); err != nil {
-		log.Errorf("preparing container /proc file system failure: %v", err)
-		os.Exit(1)
-	}
 	// Prepare container new root filesystem
+	newRoot := os.Args[1]
 	if err := nsisolation.PivotRoot(newRoot); err != nil {
 		log.Errorf("pivoting container rootfs failure: %v", err)
 		os.Exit(1)

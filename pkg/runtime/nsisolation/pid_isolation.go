@@ -9,7 +9,7 @@ import (
 // Additionally, it mounts the proc mount of a parent process to the /proc of the container.
 // The proc mount exists on the list returned by mount command invoked from a host system:
 // proc on /proc type proc (rw,nosuid,nodev,noexec,relatime)
-func ProcPrepare() error {
+func PrepareProc() error {
 	source := "proc"
 	target := "/proc"
 	fsType := "proc"

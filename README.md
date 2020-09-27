@@ -256,3 +256,4 @@ the only user (except for root), who is allowed to write to these files.
 * [Mount namespaces and shared subtrees - LWN article](https://lwn.net/Articles/689856/)
 * [Golang+shell](https://zhuanlan.zhihu.com/p/95590072)
 * [Linux Namespace : IPC](https://www.cnblogs.com/sparkdev/p/9400673.html)
+* [Pipes 101 with Go](http://www.albertoleal.me/posts/golang-pipes.html)

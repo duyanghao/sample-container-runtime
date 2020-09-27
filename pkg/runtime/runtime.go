@@ -69,15 +69,20 @@ func init() {
 
 // nsInit prepares child process namespace isolation initialization work and exec container command
 func nsInit() {
-	// Set container hostname
-	hostname := util.RandomSeq(10)
-	if err := syscall.Sethostname([]byte(hostname)); err != nil {
-		log.Errorf("setting hostname failure: %v", err)
+	// Receive parent process uid_map&gid_map configure signal
+	if err := nsisolation.WaitPrepareUid2GidMap("/proc/self/fd/3"); err != nil {
+		log.Errorf("receiving parent process uid_map&gid_map configure signal failure: %v", err)
 		os.Exit(1)
 	}
 	// Prepare container user
 	if err := nsisolation.PrepareUser(); err != nil {
 		log.Errorf("preparing container user failure: %v", err)
+		os.Exit(1)
+	}
+	// Set container hostname
+	hostname := util.RandomSeq(10)
+	if err := syscall.Sethostname([]byte(hostname)); err != nil {
+		log.Errorf("setting hostname failure: %v", err)
 		os.Exit(1)
 	}
 	// Prepare container new root filesystem
@@ -87,7 +92,7 @@ func nsInit() {
 		os.Exit(1)
 	}
 	// Prepare container proc mount
-	if err := nsisolation.ProcPrepare(); err != nil {
+	if err := nsisolation.PrepareProc(); err != nil {
 		log.Errorf("preparing container proc filesystem failure: %v", err)
 		os.Exit(1)
 	}
@@ -99,7 +104,6 @@ func nsInit() {
 // containerRun executes command normally
 func containerRun(command, hostname string) {
 	cmd := exec.Command(command)
-
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -121,26 +125,29 @@ func (cr *ContainerRuntime) createChildProcess(ctx context.Context) error {
 			syscall.CLONE_NEWPID |
 			syscall.CLONE_NEWIPC |
 			syscall.CLONE_NEWUSER,
-		UidMappings: []syscall.SysProcIDMap{
-			{
-				ContainerID: 0,
-				HostID:      os.Getuid(),
-				Size:        1,
-			},
-		},
-		GidMappings: []syscall.SysProcIDMap{
-			{
-				ContainerID: 0,
-				HostID:      os.Getgid(),
-				Size:        1,
-			},
-		},
 	}
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+	pipeR, pipeW, err := os.Pipe()
+	if err != nil {
+		log.Errorf("creating IPC(pipe) failure: %v", err)
+		return err
+	}
+	defer func() {
+		pipeR.Close()
+		pipeW.Close()
+	}()
+	cmd.ExtraFiles = []*os.File{
+		pipeR,
+	}
 	if err := cmd.Start(); err != nil {
 		log.Errorf("starting the reexec.Command failure: %v", err)
+		return err
+	}
+	// Configure uid_map&gid_map
+	if err := nsisolation.PrepareUid2GidMap(cmd.Process.Pid, 1000, 1000, pipeW); err != nil {
+		log.Errorf("preparing uid_map&gid_map for child process failure: %v", err)
 		return err
 	}
 	if err := cmd.Wait(); err != nil {

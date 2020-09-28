@@ -3,6 +3,7 @@ package nsisolation
 import (
 	"fmt"
 	"github.com/duyanghao/sample-container-runtime/pkg/runtime/constant"
+	"io/ioutil"
 	"os"
 	"syscall"
 )
@@ -25,26 +26,16 @@ func PrepareUser() error {
 func PrepareUid2GidMap(pid, uid, gid int, pipeW *os.File) error {
 	// Configure uid_map
 	uidMapPath := fmt.Sprintf("/proc/%d/uid_map", pid)
-	uidMap, err := os.Open(uidMapPath)
-	if err != nil {
-		return fmt.Errorf("open uid_map: %s failure: %v", uidMapPath, err)
-	}
-	defer uidMap.Close()
-	if _, err := uidMap.Write([]byte(fmt.Sprintf("0 %d 1", uid))); err != nil {
+	if err := ioutil.WriteFile(uidMapPath, []byte(fmt.Sprintf("0 %d 1", uid)), 0644); err != nil {
 		return fmt.Errorf("write uid_map: %s failure: %v", uidMapPath, err)
 	}
 	// Configure gid_map
 	gidMapPath := fmt.Sprintf("/proc/%d/gid_map", pid)
-	gidMap, err := os.Open(gidMapPath)
-	if err != nil {
-		return fmt.Errorf("open gid_map: %s failure: %v", gidMapPath, err)
-	}
-	defer gidMap.Close()
-	if _, err := gidMap.Write([]byte(fmt.Sprintf("0 %d 1", gid))); err != nil {
+	if err := ioutil.WriteFile(gidMapPath, []byte(fmt.Sprintf("0 %d 1", gid)), 0644); err != nil {
 		return fmt.Errorf("write gid_map: %s failure: %v", gidMapPath, err)
 	}
 	// Send signal to child process
-	_, err = pipeW.Write([]byte(constant.UID2GIDMAPDONE))
+	_, err := pipeW.Write([]byte(constant.UID2GIDMAPDONE))
 	if err != nil {
 		return fmt.Errorf("send signal to child process failure: %v", err)
 	}

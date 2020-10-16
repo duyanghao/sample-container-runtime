@@ -4,6 +4,8 @@
 * mydocker start
 * cgroups
 * mydokcer build
+* mount namespace isolation(aufs+volume)
+* user namespace isolation
 
 ## Refs
 

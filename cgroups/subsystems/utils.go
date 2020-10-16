@@ -1,13 +1,12 @@
 package subsystems
 
 import (
+	"bufio"
 	"fmt"
-	"strings"
 	"os"
 	"path"
-	"bufio"
+	"strings"
 )
-
 
 func FindCgroupMountpoint(subsystem string) string {
 	f, err := os.Open("/proc/self/mountinfo")

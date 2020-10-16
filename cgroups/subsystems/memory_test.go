@@ -1,9 +1,9 @@
 package subsystems
 
-import(
-	"testing"
+import (
 	"os"
 	"path"
+	"testing"
 )
 
 func TestMemoryCgroup(t *testing.T) {

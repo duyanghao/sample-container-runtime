@@ -1,15 +1,15 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/xianlubird/mydocker/container"
-	"io/ioutil"
-	"encoding/json"
-	"strings"
-	"os/exec"
-	"os"
 	_ "github.com/xianlubird/mydocker/nsenter"
+	"io/ioutil"
+	"os"
+	"os/exec"
+	"strings"
 )
 
 const ENV_EXEC_PID = "mydocker_pid"

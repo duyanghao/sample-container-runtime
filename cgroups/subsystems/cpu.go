@@ -1,9 +1,10 @@
 package subsystems
+
 import (
 	"fmt"
 	"io/ioutil"
-	"path"
 	"os"
+	"path"
 	"strconv"
 )
 
@@ -31,9 +32,9 @@ func (s *CpuSubSystem) Remove(cgroupPath string) error {
 	}
 }
 
-func (s *CpuSubSystem)Apply(cgroupPath string, pid int) error {
+func (s *CpuSubSystem) Apply(cgroupPath string, pid int) error {
 	if subsysCgroupPath, err := GetCgroupPath(s.Name(), cgroupPath, false); err == nil {
-		if err := ioutil.WriteFile(path.Join(subsysCgroupPath, "tasks"),  []byte(strconv.Itoa(pid)), 0644); err != nil {
+		if err := ioutil.WriteFile(path.Join(subsysCgroupPath, "tasks"), []byte(strconv.Itoa(pid)), 0644); err != nil {
 			return fmt.Errorf("set cgroup proc fail %v", err)
 		}
 		return nil
@@ -45,4 +46,3 @@ func (s *CpuSubSystem)Apply(cgroupPath string, pid int) error {
 func (s *CpuSubSystem) Name() string {
 	return "cpu"
 }
-

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/xianlubird/mydocker/container"
-	"os"
 	"io/ioutil"
+	"os"
 )
 
 func logContainer(containerName string) {

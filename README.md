@@ -7,10 +7,10 @@
 * cgroups
 * mount namespace isolation(aufs+volume)
 * user namespace isolation
+* network namespace isolation
 
 ## phase-2
 
-* network namespace isolation
 * OCI support(image spec)
 * mydokcer build
 * mydocker pull&push

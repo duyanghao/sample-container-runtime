@@ -5,7 +5,6 @@
 * mydocker stop
 * mydocker start
 * cgroups
-* mydokcer build
 * mount namespace isolation(aufs+volume)
 * user namespace isolation
 
@@ -13,6 +12,8 @@
 
 * network namespace isolation
 * OCI support(image spec)
+* mydokcer build
+* mydocker pull&push
 * CRI support
 * Kubernetes internation
 

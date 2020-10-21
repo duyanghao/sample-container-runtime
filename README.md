@@ -20,4 +20,7 @@
 ## Refs
 
 * [mydocker](https://github.com/xianlubird/mydocker/tree/code-6.5)
-
+* [cri-o](https://github.com/cri-o/cri-o)
+* [cri-api](https://github.com/kubernetes/cri-api)
+* [OCI Runtime Specification](https://github.com/opencontainers/runtime-spec)
+* [runc](https://github.com/opencontainers/runc)

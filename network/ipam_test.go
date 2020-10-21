@@ -1,8 +1,8 @@
 package network
 
-import(
-	"testing"
+import (
 	"net"
+	"testing"
 )
 
 func TestAllocate(t *testing.T) {

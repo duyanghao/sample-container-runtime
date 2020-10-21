@@ -1,44 +1,42 @@
 package network
 
 import (
+	"fmt"
 	"github.com/vishvananda/netlink"
 	"github.com/vishvananda/netns"
 	"net"
-	"fmt"
 	//"os"
-	"github.com/xianlubird/mydocker/container"
-	"path"
-	"os"
-	"runtime"
-	"github.com/Sirupsen/logrus"
 	"encoding/json"
-	"path/filepath"
-	"strings"
+	"github.com/Sirupsen/logrus"
+	"github.com/xianlubird/mydocker/container"
+	"os"
 	"os/exec"
+	"path"
+	"path/filepath"
+	"runtime"
+	"strings"
 	"text/tabwriter"
 )
 
 var (
 	defaultNetworkPath = "/var/run/mydocker/network/network/"
-	drivers = map[string]NetworkDriver{}
-	networks = map[string]*Network{}
+	drivers            = map[string]NetworkDriver{}
+	networks           = map[string]*Network{}
 )
 
 type Endpoint struct {
-	ID string `json:"id"`
-	Device netlink.Veth `json:"dev"`
-	IPAddress net.IP `json:"ip"`
-	MacAddress net.HardwareAddr `json:"mac"`
-	Network    *Network
+	ID          string           `json:"id"`
+	Device      netlink.Veth     `json:"dev"`
+	IPAddress   net.IP           `json:"ip"`
+	MacAddress  net.HardwareAddr `json:"mac"`
+	Network     *Network
 	PortMapping []string
 }
 
-
-
 type Network struct {
-	Name string
+	Name    string
 	IpRange *net.IPNet
-	Driver string
+	Driver  string
 }
 
 type NetworkDriver interface {
@@ -59,7 +57,7 @@ func (nw *Network) dump(dumpPath string) error {
 	}
 
 	nwPath := path.Join(dumpPath, nw.Name)
-	nwFile, err := os.OpenFile(nwPath, os.O_TRUNC | os.O_WRONLY | os.O_CREATE, 0644)
+	nwFile, err := os.OpenFile(nwPath, os.O_TRUNC|os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
 		logrus.Errorf("error：", err)
 		return err
@@ -219,7 +217,7 @@ func enterContainerNetns(enLink *netlink.Link, cinfo *container.ContainerInfo) f
 	if err = netns.Set(netns.NsHandle(nsFD)); err != nil {
 		logrus.Errorf("error set netns, %v", err)
 	}
-	return func () {
+	return func() {
 		netns.Set(origns)
 		origns.Close()
 		runtime.UnlockOSThread()
@@ -254,8 +252,8 @@ func configEndpointIpAddressAndRoute(ep *Endpoint, cinfo *container.ContainerInf
 
 	defaultRoute := &netlink.Route{
 		LinkIndex: peerLink.Attrs().Index,
-		Gw: ep.Network.IpRange.IP,
-		Dst: cidr,
+		Gw:        ep.Network.IpRange.IP,
+		Dst:       cidr,
 	}
 
 	if err = netlink.RouteAdd(defaultRoute); err != nil {
@@ -267,7 +265,7 @@ func configEndpointIpAddressAndRoute(ep *Endpoint, cinfo *container.ContainerInf
 
 func configPortMapping(ep *Endpoint, cinfo *container.ContainerInfo) error {
 	for _, pm := range ep.PortMapping {
-		portMapping :=strings.Split(pm, ":")
+		portMapping := strings.Split(pm, ":")
 		if len(portMapping) != 2 {
 			logrus.Errorf("port mapping format error, %v", pm)
 			continue
@@ -299,9 +297,9 @@ func Connect(networkName string, cinfo *container.ContainerInfo) error {
 
 	// 创建网络端点
 	ep := &Endpoint{
-		ID: fmt.Sprintf("%s-%s", cinfo.Id, networkName),
-		IPAddress: ip,
-		Network: network,
+		ID:          fmt.Sprintf("%s-%s", cinfo.Id, networkName),
+		IPAddress:   ip,
+		Network:     network,
 		PortMapping: cinfo.PortMapping,
 	}
 	// 调用网络驱动挂载和配置网络端点

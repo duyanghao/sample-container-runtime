@@ -1,15 +1,14 @@
 package subsystems
 
-import(
+import (
 	"fmt"
 	"io/ioutil"
-	"path"
 	"os"
+	"path"
 	"strconv"
 )
 
 type CpusetSubSystem struct {
-
 }
 
 func (s *CpusetSubSystem) Set(cgroupPath string, res *ResourceConfig) error {
@@ -33,10 +32,9 @@ func (s *CpusetSubSystem) Remove(cgroupPath string) error {
 	}
 }
 
-
-func (s *CpusetSubSystem)Apply(cgroupPath string, pid int) error {
+func (s *CpusetSubSystem) Apply(cgroupPath string, pid int) error {
 	if subsysCgroupPath, err := GetCgroupPath(s.Name(), cgroupPath, false); err == nil {
-		if err := ioutil.WriteFile(path.Join(subsysCgroupPath, "tasks"),  []byte(strconv.Itoa(pid)), 0644); err != nil {
+		if err := ioutil.WriteFile(path.Join(subsysCgroupPath, "tasks"), []byte(strconv.Itoa(pid)), 0644); err != nil {
 			return fmt.Errorf("set cgroup proc fail %v", err)
 		}
 		return nil
@@ -44,7 +42,6 @@ func (s *CpusetSubSystem)Apply(cgroupPath string, pid int) error {
 		return fmt.Errorf("get cgroup %s error: %v", cgroupPath, err)
 	}
 }
-
 
 func (s *CpusetSubSystem) Name() string {
 	return "cpuset"

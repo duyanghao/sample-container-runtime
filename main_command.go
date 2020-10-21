@@ -51,7 +51,7 @@ var runCommand = cli.Command{
 			Usage: "container network",
 		},
 		cli.StringSliceFlag{
-			Name: "p",
+			Name:  "p",
 			Usage: "port mapping",
 		},
 	},
@@ -190,9 +190,9 @@ var commitCommand = cli.Command{
 var networkCommand = cli.Command{
 	Name:  "network",
 	Usage: "container network commands",
-	Subcommands: []cli.Command {
+	Subcommands: []cli.Command{
 		{
-			Name: "create",
+			Name:  "create",
 			Usage: "create a container network",
 			Flags: []cli.Flag{
 				cli.StringFlag{
@@ -204,7 +204,7 @@ var networkCommand = cli.Command{
 					Usage: "subnet cidr",
 				},
 			},
-			Action:func(context *cli.Context) error {
+			Action: func(context *cli.Context) error {
 				if len(context.Args()) < 1 {
 					return fmt.Errorf("Missing network name")
 				}
@@ -217,18 +217,18 @@ var networkCommand = cli.Command{
 			},
 		},
 		{
-			Name: "list",
+			Name:  "list",
 			Usage: "list container network",
-			Action:func(context *cli.Context) error {
+			Action: func(context *cli.Context) error {
 				network.Init()
 				network.ListNetwork()
 				return nil
 			},
 		},
 		{
-			Name: "remove",
+			Name:  "remove",
 			Usage: "remove container network",
-			Action:func(context *cli.Context) error {
+			Action: func(context *cli.Context) error {
 				if len(context.Args()) < 1 {
 					return fmt.Errorf("Missing network name")
 				}

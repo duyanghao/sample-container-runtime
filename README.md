@@ -242,8 +242,32 @@ the only user (except for root), who is allowed to write to these files.
 
 ![](docs/images/user_namespace.png)
 
+## Roadmap
+
+### phase-1
+
+* mydocker stop
+* mydocker start
+* cgroups
+* mount namespace isolation(aufs+volume)
+* user namespace isolation
+* network namespace isolation
+
+### phase-2
+
+* OCI support(image spec)
+* mydokcer build
+* mydocker pull&push
+* CRI support
+* Kubernetes internation
+
 ## Refs
 
+* [mydocker](https://github.com/duyanghao/sample-container-runtime/tree/code-6.5)
+* [cri-o](https://github.com/cri-o/cri-o)
+* [cri-api](https://github.com/kubernetes/cri-api)
+* [OCI Runtime Specification](https://github.com/opencontainers/runtime-spec)
+* [runc](https://github.com/opencontainers/runc)
 * [Code to accompany the "Namespaces in Go" series of articles](https://github.com/teddyking/ns-process)
 * [Linux containers in 500 lines of code](https://blog.lizzie.io/linux-containers-in-500-loc.html)
 * [Whitepaper - Understanding and hardening Linux Containers](https://github.com/osinstom/containers-impl-c)
@@ -257,4 +281,3 @@ the only user (except for root), who is allowed to write to these files.
 * [Golang+shell](https://zhuanlan.zhihu.com/p/95590072)
 * [Linux Namespace : IPC](https://www.cnblogs.com/sparkdev/p/9400673.html)
 * [Pipes 101 with Go](http://www.albertoleal.me/posts/golang-pipes.html)
-* [mydocker](https://github.com/xianlubird/mydocker)

@@ -1,31 +1,42 @@
-/*
-Copyright 2014 The Kubernetes Authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package main
 
 import (
+	sampleapp "github.com/duyanghao/sample-container-runtime/cmd/container-runtime/app"
+	log "github.com/sirupsen/logrus"
+	"github.com/urfave/cli"
 	"os"
-
-	"github.com/duyanghao/sample-container-runtime/cmd/container-runtime/app"
 )
 
-func main() {
-	command := app.NewContainerRuntimeCommand()
+const usage = `mydocker is a simple container runtime implementation.
+			   The purpose of this project is to learn how docker works and how to write a docker by ourselves
+			   Enjoy it, just for fun.`
 
-	if err := command.Execute(); err != nil {
-		os.Exit(1)
+func main() {
+	app := cli.NewApp()
+	app.Name = "sample-container-runtime"
+	app.Usage = usage
+
+	app.Commands = []cli.Command{
+		sampleapp.InitCommand,
+		sampleapp.RunCommand,
+		sampleapp.ListCommand,
+		sampleapp.LogCommand,
+		sampleapp.ExecCommand,
+		sampleapp.StopCommand,
+		sampleapp.RemoveCommand,
+		sampleapp.CommitCommand,
+		sampleapp.NetworkCommand,
+	}
+
+	app.Before = func(context *cli.Context) error {
+		// Log as JSON instead of the default ASCII formatter.
+		log.SetFormatter(&log.JSONFormatter{})
+
+		log.SetOutput(os.Stdout)
+		return nil
+	}
+
+	if err := app.Run(os.Args); err != nil {
+		log.Fatal(err)
 	}
 }

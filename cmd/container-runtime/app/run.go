@@ -41,7 +41,6 @@ func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, containerN
 
 	// use containerID as cgroup name
 	cgroupManager := cgroups.NewCgroupManager(containerID)
-	defer cgroupManager.Destroy()
 	cgroupManager.Set(res)
 	cgroupManager.Apply(parent.Process.Pid)
 
@@ -66,6 +65,7 @@ func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, containerN
 		parent.Wait()
 		deleteContainerInfo(containerName)
 		container.DeleteWorkSpace(volume, containerName)
+		cgroupManager.Destroy()
 	}
 
 }

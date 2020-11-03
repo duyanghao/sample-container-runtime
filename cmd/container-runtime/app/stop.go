@@ -3,6 +3,7 @@ package app
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/duyanghao/sample-container-runtime/pkg/runtime/cgroups"
 	"github.com/duyanghao/sample-container-runtime/pkg/runtime/container"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
@@ -77,4 +78,7 @@ func removeContainer(containerName string) {
 		return
 	}
 	container.DeleteWorkSpace(containerInfo.Volume, containerName)
+	// clear cgroup
+	cgroupManager := cgroups.NewCgroupManager(containerInfo.Id)
+	cgroupManager.Destroy()
 }

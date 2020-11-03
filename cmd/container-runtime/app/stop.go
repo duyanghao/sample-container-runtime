@@ -22,7 +22,7 @@ func stopContainer(containerName string) {
 		log.Errorf("Conver pid from string to int error %v", err)
 		return
 	}
-	if err := syscall.Kill(pidInt, syscall.SIGTERM); err != nil {
+	if err := syscall.Kill(pidInt, syscall.SIGKILL); err != nil {
 		log.Errorf("Stop container %s error %v", containerName, err)
 		return
 	}

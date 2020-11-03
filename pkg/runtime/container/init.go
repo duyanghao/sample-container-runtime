@@ -62,7 +62,7 @@ func setUpMount() {
 	log.Infof("Current location is %s", pwd)
 	pivotRoot(pwd)
 
-	//mount proc
+	// mount proc
 	defaultMountFlags := syscall.MS_NOEXEC | syscall.MS_NOSUID | syscall.MS_NODEV
 	syscall.Mount("proc", "/proc", "proc", uintptr(defaultMountFlags), "")
 
@@ -78,9 +78,9 @@ func pivotRoot(root string) error {
 	  为了使当前root的老 root 和新 root 不在同一个文件系统下，我们把root重新mount了一次
 	  bind mount是把相同的内容换了一个挂载点的挂载方法
 	*/
-	/*if err := syscall.Mount(root, root, "bind", syscall.MS_BIND|syscall.MS_REC, ""); err != nil {
+	if err := syscall.Mount(root, root, "bind", syscall.MS_BIND|syscall.MS_REC, ""); err != nil {
 		return fmt.Errorf("Mount rootfs to itself error: %v", err)
-	}*/
+	}
 	// 创建 rootfs/.pivot_root 存储 old_root
 	pivotDir := filepath.Join(root, ".pivot_root")
 	if err := os.Mkdir(pivotDir, 0777); err != nil {

@@ -12,8 +12,8 @@ import (
 	"strings"
 )
 
-const ENV_EXEC_PID = "mydocker_pid"
-const ENV_EXEC_CMD = "mydocker_cmd"
+const ENV_EXEC_PID = "scr_pid"
+const ENV_EXEC_CMD = "scr_cmd"
 
 func ExecContainer(containerName string, comArray []string) {
 	pid, err := GetContainerPidByName(containerName)

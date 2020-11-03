@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-const ipamDefaultAllocatorPath = "/var/run/mydocker/network/ipam/subnet.json"
+const ipamDefaultAllocatorPath = "/var/run/sample-container-runtime/network/ipam/subnet.json"
 
 type IPAM struct {
 	SubnetAllocatorPath string

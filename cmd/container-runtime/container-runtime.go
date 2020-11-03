@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-const usage = `mydocker is a simple container runtime implementation.
+const usage = `sample-container-runtime is a simple container runtime implementation.
 			   The purpose of this project is to learn how docker works and how to write a docker by ourselves
 			   Enjoy it, just for fun.`
 

@@ -246,8 +246,8 @@ the only user (except for root), who is allowed to write to these files.
 
 ### phase-1
 
-* mydocker stop
-* mydocker start
+* sample-container-runtime stop
+* sample-container-runtime start
 * cgroups
 * mount namespace isolation(aufs+volume)
 * user namespace isolation
@@ -257,13 +257,12 @@ the only user (except for root), who is allowed to write to these files.
 
 * OCI support(image spec)
 * mydokcer build
-* mydocker pull&push
+* sample-container-runtime pull&push
 * CRI support
 * Kubernetes internation
 
 ## Refs
 
-* [mydocker](https://github.com/duyanghao/sample-container-runtime/tree/code-6.5)
 * [cri-o](https://github.com/cri-o/cri-o)
 * [cri-api](https://github.com/kubernetes/cri-api)
 * [OCI Runtime Specification](https://github.com/opencontainers/runtime-spec)

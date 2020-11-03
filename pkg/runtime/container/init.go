@@ -2,6 +2,7 @@ package container
 
 import (
 	"fmt"
+	"github.com/duyanghao/sample-container-runtime/pkg/runtime/util"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
@@ -17,6 +18,12 @@ func RunContainerInitProcess() error {
 		return fmt.Errorf("Run container get user command error, cmdArray is nil")
 	}
 
+	hostname := util.RandomSeq(10)
+
+	if err := syscall.Sethostname([]byte(hostname)); err != nil {
+		log.Errorf("set hostname error: %v", err)
+		return err
+	}
 	setUpMount()
 
 	path, err := exec.LookPath(cmdArray[0])
@@ -25,7 +32,7 @@ func RunContainerInitProcess() error {
 		return err
 	}
 	log.Infof("Find path %s", path)
-	if err := syscall.Exec(path, cmdArray[0:], os.Environ()); err != nil {
+	if err := syscall.Exec(path, cmdArray[0:], append(os.Environ(), fmt.Sprintf("PS1=%s # ", hostname))); err != nil {
 		log.Errorf(err.Error())
 	}
 	return nil

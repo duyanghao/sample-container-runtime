@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-//Create a AUFS filesystem as container root workspace
+// Create a AUFS filesystem as container root workspace
 func NewWorkSpace(volume, imageName, containerName string) {
 	CreateReadOnlyLayer(imageName)
 	CreateWriteLayer(containerName)
@@ -25,7 +25,7 @@ func NewWorkSpace(volume, imageName, containerName string) {
 	}
 }
 
-//Decompression tar image
+// Decompression tar image
 func CreateReadOnlyLayer(imageName string) error {
 	unTarFolderUrl := RootUrl + "/" + imageName + "/"
 	imageUrl := RootUrl + "/" + imageName + ".tar"
@@ -48,6 +48,7 @@ func CreateReadOnlyLayer(imageName string) error {
 	return nil
 }
 
+// Create read-write layer
 func CreateWriteLayer(containerName string) {
 	writeURL := fmt.Sprintf(WriteLayerUrl, containerName)
 	if err := os.MkdirAll(writeURL, 0777); err != nil {
@@ -75,6 +76,7 @@ func MountVolume(volumeURLs []string, containerName string) error {
 	return nil
 }
 
+// Create aufs mount point
 func CreateMountPoint(containerName, imageName string) error {
 	mntUrl := fmt.Sprintf(MntUrl, containerName)
 	if err := os.MkdirAll(mntUrl, 0777); err != nil {
@@ -93,7 +95,7 @@ func CreateMountPoint(containerName, imageName string) error {
 	return nil
 }
 
-//Delete the AUFS filesystem while container exit
+// Delete the AUFS filesystem while container exit
 func DeleteWorkSpace(volume, containerName string) {
 	if volume != "" {
 		volumeURLs := strings.Split(volume, ":")

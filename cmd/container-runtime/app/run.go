@@ -77,7 +77,7 @@ func sendInitCommand(comArray []string, writePipe *os.File) {
 	writePipe.Close()
 }
 
-func recordContainerInfo(tty bool, containerPID int, commandArray []string, containerName, imageName, id, volume string, res *subsystems.ResourceConfig, envSlice []string, nw string, portmapping []string) (string, error) {
+func recordContainerInfo(tty bool, containerPID int, commandArray []string, containerName, id, imageName, volume string, res *subsystems.ResourceConfig, envSlice []string, nw string, portmapping []string) (string, error) {
 	createTime := time.Now().Format("2006-01-02 15:04:05")
 	containerInfo := &container.ContainerInfo{
 		Id:          id,
@@ -91,7 +91,8 @@ func recordContainerInfo(tty bool, containerPID int, commandArray []string, cont
 		Env:         envSlice,
 		Network:     nw,
 		PortMapping: portmapping,
-		Detached:    !tty,
+		Detached:    tty,
+		ImageName:   imageName,
 	}
 
 	jsonBytes, err := json.Marshal(containerInfo)

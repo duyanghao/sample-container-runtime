@@ -193,15 +193,27 @@ func DeleteNetwork(networkName string) error {
 	return nw.remove(defaultNetworkPath)
 }
 
+// 将网络端点加入到容器的网络空间中
+// 并锁定当前程序所执行的线程，使当前线程进入到容器的网络空间
+// 返回值是一个函数指针，执行这个返回函数才会退出容器的网络空间，回归到宿主机的网络空间
 func enterContainerNetns(enLink *netlink.Link, cinfo *container.ContainerInfo) func() {
+	// 找到容器的Net Namespace
+	// /proc/{pid}/ns/net打开这个文件的文件描述符就可以来操作Net Namespace
+	// 而Conta工nerinfo中的PID，即容器在宿主机上映射的进程ID
+	// 它对应的/proc/{pid}/ns/net就是容器内部的Net Namespace
 	f, err := os.OpenFile(fmt.Sprintf("/proc/%s/ns/net", cinfo.Pid), os.O_RDONLY, 0)
 	if err != nil {
 		log.Errorf("error get container net namespace, %v", err)
 	}
 
-	nsFD := f.Fd()
+	// 锁定当前程序所执行的线程，如果不锁定操作系统线程的话
+	// Go语言的goroutine可能会被调度到别的线程上去
+	// 就不能保证一直在所需要的网络空间中了
+	// 所以调用runtime.LockOSThread时要先锁定当前程序执行的线程
 	runtime.LockOSThread()
 
+	// 取到文件描述符
+	nsFD := f.Fd()
 	// 修改veth peer 另外一端移到容器的namespace中
 	if err = netlink.LinkSetNsFd(*enLink, int(nsFD)); err != nil {
 		log.Errorf("error set link netns , %v", err)
@@ -218,44 +230,66 @@ func enterContainerNetns(enLink *netlink.Link, cinfo *container.ContainerInfo) f
 		log.Errorf("error set netns, %v", err)
 	}
 	return func() {
+		// 恢复到上面获取到的之前的Net Namespace
 		netns.Set(origns)
+		// 关闭Namespace文件
 		origns.Close()
+		// 取消对当附程序的线程锁定
 		runtime.UnlockOSThread()
+		// 关闭Namespace文件
 		f.Close()
 	}
 }
 
+// 配置容器网络端点的地址和路由
 func configEndpointIpAddressAndRoute(ep *Endpoint, cinfo *container.ContainerInfo) error {
+	// 通过网络端点中“Veth”的另一端
 	peerLink, err := netlink.LinkByName(ep.Device.PeerName)
 	if err != nil {
 		return fmt.Errorf("fail config endpoint: %v", err)
 	}
 
+	// 将网络端点加入到容器的网络空间中
+	// 并使这个函数下面的操作都在这个网络空间中进行
+	// 执行完函数后，恢复为默认的网络空间，具体实现下面再做介绍
 	defer enterContainerNetns(&peerLink, cinfo)()
 
+	// 获取到容器的IP地址及网段，用于配置容器内部接口地址
+	// 比如容器IP是192.168.1.2，而网络的网段是192.168.1.0/24
+	// 那么这里产出的IP字符串就是192.168.1.2/24，用于容器内Veth端点配置
 	interfaceIP := *ep.Network.IpRange
 	interfaceIP.IP = ep.IPAddress
 
+	// 调用setinterfaceIP函数设置容器内Veth端点的IP
 	if err = setInterfaceIP(ep.Device.PeerName, interfaceIP.String()); err != nil {
 		return fmt.Errorf("%v,%s", ep.Network, err)
 	}
 
+	// 启动容器内的Veth端点
 	if err = setInterfaceUP(ep.Device.PeerName); err != nil {
 		return err
 	}
 
+	// Net Namespace中默认本地地址127.0.0.1的"lo"网卡是关闭状态的
+	// 启动它以保证容器访问自己的请求
 	if err = setInterfaceUP("lo"); err != nil {
 		return err
 	}
 
+	// 设置容器内的外部请求都通过容器内的Veth端点访问
+	// 0.0.0.0/0的网段，表示所有的IP地址段
 	_, cidr, _ := net.ParseCIDR("0.0.0.0/0")
 
+	// 构建要添加的路由数据，包括网络设备、网关IP及目的网段
+	// 相当于route add -net 0.0.0.0/0 gw {Bridge网桥地址} dev {容器内的Veth端点设备}
 	defaultRoute := &netlink.Route{
 		LinkIndex: peerLink.Attrs().Index,
 		Gw:        ep.Network.IpRange.IP,
 		Dst:       cidr,
 	}
 
+	// 调用netlink的RouteAdd，添加路由到容器的网络空间
+	// RouteAdd函数相当于route add命令
 	if err = netlink.RouteAdd(defaultRoute); err != nil {
 		return err
 	}
@@ -265,11 +299,15 @@ func configEndpointIpAddressAndRoute(ep *Endpoint, cinfo *container.ContainerInf
 
 func configPortMapping(ep *Endpoint, cinfo *container.ContainerInfo) error {
 	for _, pm := range ep.PortMapping {
+		// 分割成宿主机的端口和容器的端口
 		portMapping := strings.Split(pm, ":")
 		if len(portMapping) != 2 {
 			log.Errorf("port mapping format error, %v", pm)
 			continue
 		}
+		// 由于 iptables没有Go语言版本的实现，所以采用exec.Command的方式直接调用命令配置
+		// 在iptables的PREROUTING中添加DNAT规则
+		// 将宿主机的端口请求转发到容器的地址和端口上
 		iptablesCmd := fmt.Sprintf("-t nat -A PREROUTING -p tcp -m tcp --dport %s -j DNAT --to-destination %s:%s",
 			portMapping[0], ep.IPAddress.String(), portMapping[1])
 		cmd := exec.Command("iptables", strings.Split(iptablesCmd, " ")...)

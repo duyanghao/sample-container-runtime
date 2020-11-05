@@ -23,6 +23,7 @@ func main() {
 		sampleapp.LogCommand,
 		sampleapp.ExecCommand,
 		sampleapp.StopCommand,
+		sampleapp.StartCommand,
 		sampleapp.RemoveCommand,
 		sampleapp.CommitCommand,
 		sampleapp.NetworkCommand,

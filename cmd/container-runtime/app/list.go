@@ -7,6 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
+	"strings"
 	"text/tabwriter"
 )
 
@@ -40,7 +41,7 @@ func ListContainers() {
 			item.Name,
 			item.Pid,
 			item.Status,
-			item.Command,
+			strings.Join(item.Command, " "),
 			item.CreatedTime)
 	}
 	if err := w.Flush(); err != nil {

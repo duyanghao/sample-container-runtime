@@ -51,27 +51,31 @@ func CreateReadOnlyLayer(imageName string) error {
 // Create read-write layer
 func CreateWriteLayer(containerName string) {
 	writeURL := fmt.Sprintf(WriteLayerUrl, containerName)
-	if err := os.MkdirAll(writeURL, 0777); err != nil {
-		log.Infof("Mkdir write layer dir %s error. %v", writeURL, err)
+	if _, err := os.Stat(writeURL); os.IsNotExist(err) {
+		if err := os.MkdirAll(writeURL, 0777); err != nil {
+			log.Infof("Mkdir write layer dir %s error. %v", writeURL, err)
+		}
 	}
 }
 
 func MountVolume(volumeURLs []string, containerName string) error {
-	parentUrl := volumeURLs[0]
-	if err := os.Mkdir(parentUrl, 0777); err != nil {
-		log.Infof("Mkdir parent dir %s error. %v", parentUrl, err)
-	}
 	containerUrl := volumeURLs[1]
 	mntURL := fmt.Sprintf(MntUrl, containerName)
 	containerVolumeURL := mntURL + "/" + containerUrl
-	if err := os.Mkdir(containerVolumeURL, 0777); err != nil {
-		log.Infof("Mkdir container dir %s error. %v", containerVolumeURL, err)
-	}
-	dirs := "dirs=" + parentUrl
-	_, err := exec.Command("mount", "-t", "aufs", "-o", dirs, "none", containerVolumeURL).CombinedOutput()
-	if err != nil {
-		log.Errorf("Mount volume failed. %v", err)
-		return err
+	if _, err := os.Stat(containerVolumeURL); os.IsNotExist(err) {
+		if err := os.Mkdir(containerVolumeURL, 0777); err != nil {
+			log.Infof("Mkdir container dir %s error. %v", containerVolumeURL, err)
+		}
+		parentUrl := volumeURLs[0]
+		if err := os.Mkdir(parentUrl, 0777); err != nil {
+			log.Infof("Mkdir parent dir %s error. %v", parentUrl, err)
+		}
+		dirs := "dirs=" + parentUrl
+		_, err := exec.Command("mount", "-t", "aufs", "-o", dirs, "none", containerVolumeURL).CombinedOutput()
+		if err != nil {
+			log.Errorf("Mount volume failed. %v", err)
+			return err
+		}
 	}
 	return nil
 }
@@ -79,18 +83,21 @@ func MountVolume(volumeURLs []string, containerName string) error {
 // Create aufs mount point
 func CreateMountPoint(containerName, imageName string) error {
 	mntUrl := fmt.Sprintf(MntUrl, containerName)
-	if err := os.MkdirAll(mntUrl, 0777); err != nil {
-		log.Errorf("Mkdir mountpoint dir %s error. %v", mntUrl, err)
-		return err
-	}
-	tmpWriteLayer := fmt.Sprintf(WriteLayerUrl, containerName)
-	tmpImageLocation := RootUrl + "/" + imageName
-	mntURL := fmt.Sprintf(MntUrl, containerName)
-	dirs := "dirs=" + tmpWriteLayer + ":" + tmpImageLocation
-	_, err := exec.Command("mount", "-t", "aufs", "-o", dirs, "none", mntURL).CombinedOutput()
-	if err != nil {
-		log.Errorf("Run command for creating mount point failed %v", err)
-		return err
+	if _, err := os.Stat(mntUrl); os.IsNotExist(err) {
+		if err := os.MkdirAll(mntUrl, 0777); err != nil {
+			log.Errorf("Mkdir mountpoint dir %s error. %v", mntUrl, err)
+			return err
+		}
+
+		tmpWriteLayer := fmt.Sprintf(WriteLayerUrl, containerName)
+		tmpImageLocation := RootUrl + "/" + imageName
+		mntURL := fmt.Sprintf(MntUrl, containerName)
+		dirs := "dirs=" + tmpWriteLayer + ":" + tmpImageLocation
+		_, err := exec.Command("mount", "-t", "aufs", "-o", dirs, "none", mntURL).CombinedOutput()
+		if err != nil {
+			log.Errorf("Run command for creating mount point failed %v", err)
+			return err
+		}
 	}
 	return nil
 }

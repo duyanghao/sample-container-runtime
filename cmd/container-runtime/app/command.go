@@ -64,7 +64,7 @@ var RunCommand = cli.Command{
 			cmdArray = append(cmdArray, arg)
 		}
 
-		//get image name
+		// get image name
 		imageName := cmdArray[0]
 		cmdArray = cmdArray[1:]
 
@@ -128,7 +128,7 @@ var ExecCommand = cli.Command{
 	Name:  "exec",
 	Usage: "exec a command into container",
 	Action: func(context *cli.Context) error {
-		//This is for callback
+		// this is for callback
 		if os.Getenv(ENV_EXEC_PID) != "" {
 			log.Infof("pid callback pid %s", os.Getgid())
 			return nil
@@ -156,6 +156,19 @@ var StopCommand = cli.Command{
 		}
 		containerName := context.Args().Get(0)
 		stopContainer(containerName)
+		return nil
+	},
+}
+
+var StartCommand = cli.Command{
+	Name:  "start",
+	Usage: "start a container",
+	Action: func(context *cli.Context) error {
+		if len(context.Args()) < 1 {
+			return fmt.Errorf("Missing container name")
+		}
+		containerName := context.Args().Get(0)
+		startContainer(containerName)
 		return nil
 	},
 }

@@ -1,9 +1,9 @@
 package subsystems
 
 type ResourceConfig struct {
-	MemoryLimit string
-	CpuShare    string
-	CpuSet      string
+	MemoryLimit string `json:"memoryLimit"`
+	CpuShare    string `json:"cpuShare"`
+	CpuSet      string `json:"cpuSet"`
 }
 
 type Subsystem interface {

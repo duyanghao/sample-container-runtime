@@ -33,7 +33,7 @@ func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, containerN
 	}
 
 	//record container info
-	containerName, err := recordContainerInfo(parent.Process.Pid, comArray, containerName, containerID, volume)
+	containerName, err := recordContainerInfo(tty, parent.Process.Pid, comArray, containerName, containerID, imageName, volume, res, envSlice, nw, portmapping)
 	if err != nil {
 		log.Errorf("Record container info error %v", err)
 		return
@@ -77,17 +77,21 @@ func sendInitCommand(comArray []string, writePipe *os.File) {
 	writePipe.Close()
 }
 
-func recordContainerInfo(containerPID int, commandArray []string, containerName, id, volume string) (string, error) {
+func recordContainerInfo(tty bool, containerPID int, commandArray []string, containerName, imageName, id, volume string, res *subsystems.ResourceConfig, envSlice []string, nw string, portmapping []string) (string, error) {
 	createTime := time.Now().Format("2006-01-02 15:04:05")
-	command := strings.Join(commandArray, "")
 	containerInfo := &container.ContainerInfo{
 		Id:          id,
 		Pid:         strconv.Itoa(containerPID),
-		Command:     command,
+		Command:     commandArray,
 		CreatedTime: createTime,
 		Status:      container.RUNNING,
 		Name:        containerName,
 		Volume:      volume,
+		ResConf:     res,
+		Env:         envSlice,
+		Network:     nw,
+		PortMapping: portmapping,
+		Detached:    !tty,
 	}
 
 	jsonBytes, err := json.Marshal(containerInfo)

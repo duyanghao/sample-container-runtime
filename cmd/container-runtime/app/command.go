@@ -87,7 +87,7 @@ var RunCommand = cli.Command{
 		envSlice := context.StringSlice("e")
 		portmapping := context.StringSlice("p")
 
-		Run(createTty, cmdArray, resConf, containerName, volume, imageName, envSlice, network, portmapping)
+		Run(createTty, randStringBytes(10), cmdArray, resConf, containerName, volume, imageName, envSlice, network, portmapping)
 		return nil
 	},
 }

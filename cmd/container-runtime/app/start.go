@@ -10,5 +10,5 @@ func startContainer(containerName string) {
 		log.Errorf("Get contaienr info by name %s error %v", containerName, err)
 		return
 	}
-	Run(containerInfo.Detached, containerInfo.Command, containerInfo.ResConf, containerName, containerInfo.Volume, containerInfo.ImageName, containerInfo.Env, containerInfo.Network, containerInfo.PortMapping)
+	Run(containerInfo.Detached, containerInfo.Id, containerInfo.Command, containerInfo.ResConf, containerName, containerInfo.Volume, containerInfo.ImageName, containerInfo.Env, containerInfo.Network, containerInfo.PortMapping)
 }
